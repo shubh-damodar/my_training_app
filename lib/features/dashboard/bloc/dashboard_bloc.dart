@@ -89,6 +89,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           final trainerMatch = trainerFilters.contains(training.trainer);
           final trainingNameMatch = trainingNameFilters.contains(training.trainingName);
 
+          if (locationFilters.isNotEmpty && !locationMatch) return false;
+          if (trainerFilters.isNotEmpty && !trainerMatch) return false;
+          if (trainingNameFilters.isNotEmpty && !trainingNameMatch) return false;
+          //Early return for optimization ----->
+
           if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
             return locationMatch && trainerMatch && trainingNameMatch;
           } else if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty) {
@@ -104,7 +109,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           } else if (trainingNameFilters.isNotEmpty) {
             return trainingNameMatch;
           } else {
-            return false; // No filters active
+            return false;
           }
         }).toList();
 

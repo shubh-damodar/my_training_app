@@ -32,7 +32,6 @@ class _BottomListBuilderWidgetState extends State<BottomListBuilderWidget> {
         if (state is FilteredFromSortState) {
           data.addAll(state.trainingList ?? []);
         }
-        print('building bottom list widget');
 
         return Expanded(
           child: ListView.builder(
