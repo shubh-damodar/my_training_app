@@ -14,10 +14,11 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (context) => DashboardBloc()),
       ],
       child: MaterialApp.router(
-        routerConfig: AppRouter().goRouter, // Use your AppRouter
+        routerConfig: AppRouter().goRouter,
         title: 'Flutter Demo',
         theme: AppTheme.lightTheme,
         darkTheme: AppTheme.darkTheme,
+        themeMode: ThemeMode.dark,
       ),
     );
   }

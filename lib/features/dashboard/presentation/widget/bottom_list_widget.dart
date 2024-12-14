@@ -1,11 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
+import 'package:my_training_app/collections/global_data.dart';
 import 'package:my_training_app/core/theme/app_theme.dart';
 import 'package:my_training_app/features/dashboard/bloc/dashboard_bloc.dart';
 import 'package:my_training_app/features/dashboard/data/models/training_model.dart';
 import 'package:my_training_app/features/dashboard/presentation/widget/carousel_container_widget.dart';
 import 'package:my_training_app/utils/custom_padding.dart';
 import 'package:my_training_app/utils/custom_text.dart';
+import 'package:my_training_app/utils/date_time.dart';
 
 class BottomListBuilderWidget extends StatefulWidget {
   const BottomListBuilderWidget({super.key});
@@ -33,24 +36,213 @@ class _BottomListBuilderWidgetState extends State<BottomListBuilderWidget> {
           data.addAll(state.trainingList ?? []);
         }
 
+        if (data.isEmpty) return _noDataFound(context);
+
         return Expanded(
           child: ListView.builder(
             itemCount: data.length,
             shrinkWrap: true,
             primary: true,
-            padding: edgeLRTB(l: 16, r: 16, t: 16, b: 16),
+            padding: edgeLRTB(t: 8),
             itemBuilder: (BuildContext context, int index) {
-              return Container(
-                height: 150,
-                margin: const EdgeInsets.only(bottom: 16),
-                width: double.infinity,
-                color: ColorPalette.whiteColor,
-                child: CustomText(text: data[index].trainingName),
+              return InkWell(
+                onTap: () => context.push('/summeryOfTrainingScreen', extra: data[index]),
+                child: Container(
+                  height: 150,
+                  margin: const EdgeInsets.only(bottom: 8, right: 16, left: 16, top: 8),
+                  padding: edgeAll(16),
+                  width: MediaQuery.of(context).size.width,
+                  color: ColorPalette.whiteColor,
+                  child: Row(
+                    children: [
+                      _leftCardDetails(data[index]),
+                      const SizedBox(width: 10),
+                      SizedBox(
+                        height: 150,
+                        child: Column(
+                          mainAxisSize: MainAxisSize.max,
+                          children: List.generate(35, (int _) {
+                            return Expanded(
+                              child: Container(
+                                width: 1,
+                                height: 2,
+                                color: Colors.grey,
+                                margin: edgeLRTB(b: 2),
+                              ),
+                            );
+                          }),
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      _rightCardDetails(data[index]),
+                    ],
+                  ),
+                ),
               );
             },
           ),
         );
       },
+    );
+  }
+
+  Padding _noDataFound(BuildContext context) {
+    return Padding(
+      padding: edgeLRTB(t: 20),
+      child: Column(
+        children: [
+          const CustomText(text: "No Data Found!!!"),
+          InkWell(
+            onTap: () {
+              globalSaveList.clear();
+              context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
+            },
+            child: const CustomText(
+              text: "Clear Filters",
+              color: Colors.blueAccent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Expanded _rightCardDetails(Training data) {
+    return Expanded(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.max,
+        children: [
+          CustomText(
+            text: data.highlight,
+            size: 10,
+            fontWeight: FontWeight.w600,
+            color: ColorPalette.redColor,
+          ),
+          CustomText(
+            text: '${data.trainingName} (${data.rating})',
+            fontWeight: FontWeight.w600,
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              Stack(
+                clipBehavior: Clip.none,
+                children: [
+                  ClipRRect(
+                    borderRadius: BorderRadius.circular(30),
+                    child: Image.network(
+                      data.profileImage,
+                      width: 40,
+                      height: 40,
+                      fit: BoxFit.cover,
+                    ),
+                  ),
+                  Positioned(
+                    bottom: -5,
+                    right: -5,
+                    child: Container(
+                      padding: const EdgeInsets.all(4),
+                      decoration: const BoxDecoration(
+                        color: Colors.white,
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.person_add_alt_outlined,
+                        size: 12,
+                        color: Colors.blue,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(width: 10),
+              Column(
+                mainAxisAlignment: MainAxisAlignment.start,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  CustomText(
+                    text: data.work,
+                    size: 9,
+                    fontWeight: FontWeight.w700,
+                  ),
+                  CustomText(
+                    text: data.trainer,
+                    size: 10,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ],
+              )
+            ],
+          ),
+          Expanded(
+            child: Row(
+              crossAxisAlignment: CrossAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.end,
+              children: [
+                Container(
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(2),
+                    color: ColorPalette.redColor,
+                  ),
+                  padding: edgeLRTB(l: 10, r: 10, t: 5, b: 5),
+                  child: CustomText(
+                    text: "Enroll Now",
+                    size: 12,
+                    color: ColorPalette.whiteColor,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  SizedBox _leftCardDetails(Training data) {
+    return SizedBox(
+      width: 110,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CustomText(
+                text: mmmDd(data.startTime),
+                fontWeight: FontWeight.w700,
+              ),
+              const CustomText(
+                text: " - ",
+                fontWeight: FontWeight.w700,
+              ),
+              CustomText(
+                text: '${dd(data.endTime)},',
+                fontWeight: FontWeight.w700,
+              ),
+            ],
+          ),
+          CustomText(
+            text: yyyy(data.startTime),
+            fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(height: 10),
+          CustomText(
+            text: "${formatTime(data.startTime)} - ${formatTime(data.endTime)}",
+            size: 9,
+            fontWeight: FontWeight.w500,
+          ),
+          const Spacer(),
+          CustomText(
+            text: data.address,
+            size: 11,
+            fontWeight: FontWeight.w500,
+          ),
+          const SizedBox(height: 3),
+        ],
+      ),
     );
   }
 }

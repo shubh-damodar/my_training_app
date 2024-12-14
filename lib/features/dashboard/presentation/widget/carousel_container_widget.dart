@@ -1,6 +1,7 @@
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:go_router/go_router.dart';
 import 'package:my_training_app/core/theme/app_theme.dart';
 import 'package:my_training_app/features/dashboard/bloc/dashboard_bloc.dart';
 import 'package:my_training_app/features/dashboard/data/models/training_model.dart';
@@ -136,91 +137,96 @@ class CustomCursorWidget extends StatelessWidget {
         itemCount: data.length,
         carouselController: buttonCarouselController,
         itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
-          return ClipRRect(
-            borderRadius: const BorderRadius.all(Radius.circular(9)),
-            child: SizedBox(
-              height: 160,
-              width: MediaQuery.of(context).size.width - 70,
-              child: Container(
-                decoration: BoxDecoration(
-                  image: DecorationImage(
-                    image: AssetImage(data[itemIndex].backgroundImage),
-                    fit: BoxFit.fill,
-                    colorFilter: ColorFilter.mode(
-                      Colors.black.withOpacity(0.3),
-                      BlendMode.darken,
+          return InkWell(
+            onTap: () {
+              context.push('/summeryOfTrainingScreen', extra: data[itemIndex]);
+            },
+            child: ClipRRect(
+              borderRadius: const BorderRadius.all(Radius.circular(9)),
+              child: SizedBox(
+                height: 160,
+                width: MediaQuery.of(context).size.width - 70,
+                child: Container(
+                  decoration: BoxDecoration(
+                    image: DecorationImage(
+                      image: AssetImage(data[itemIndex].backgroundImage),
+                      fit: BoxFit.fill,
+                      colorFilter: ColorFilter.mode(
+                        Colors.black.withOpacity(0.3),
+                        BlendMode.darken,
+                      ),
                     ),
                   ),
-                ),
-                padding: edgeLRTB(l: 16, r: 16, b: 8),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  mainAxisAlignment: MainAxisAlignment.end,
-                  children: [
-                    CustomText(
-                      text: data[itemIndex].trainingName,
-                      size: 15,
-                      color: Colors.white,
-                      fontWeight: FontWeight.w700,
-                    ),
-                    Row(
-                      children: [
-                        CustomText(
-                          text: data[itemIndex].location,
-                          size: 11,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        const CustomText(
-                          text: ' - ',
-                          color: Colors.white,
-                        ),
-                        CustomText(
-                          text: "${ddMMM(data[itemIndex].startTime)} - ${ddMMM(data[itemIndex].endTime)}",
-                          size: 12,
-                          color: Colors.white,
-                          fontWeight: FontWeight.w500,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 8),
-                    Row(
-                      children: [
-                        if (data[itemIndex].offerPrice != data[itemIndex].price)
-                          Text(
-                            data[itemIndex].price,
-                            style: const TextStyle(
-                              decoration: TextDecoration.lineThrough,
-                              decorationThickness: 3,
-                              decorationColor: Colors.red,
-                              color: Colors.red,
-                              fontSize: 8,
-                              decorationStyle: TextDecorationStyle.solid,
-                              fontWeight: FontWeight.w500,
-                            ),
+                  padding: edgeLRTB(l: 16, r: 16, b: 8),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.end,
+                    children: [
+                      CustomText(
+                        text: data[itemIndex].trainingName,
+                        size: 15,
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                      ),
+                      Row(
+                        children: [
+                          CustomText(
+                            text: data[itemIndex].location,
+                            size: 11,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w600,
                           ),
-                        const SizedBox(width: 4),
-                        CustomText(
-                          text: data[itemIndex].offerPrice,
-                          size: 11,
-                          color: Colors.red,
-                          fontWeight: FontWeight.w600,
-                        ),
-                        const Spacer(),
-                        const CustomText(
-                          text: 'View Details',
-                          color: Colors.white,
-                          size: 10,
-                          fontWeight: FontWeight.w500,
-                        ),
-                        Icon(
-                          Icons.arrow_forward,
-                          color: ColorPalette.whiteColor,
-                          size: 11,
-                        )
-                      ],
-                    )
-                  ],
+                          const CustomText(
+                            text: ' - ',
+                            color: Colors.white,
+                          ),
+                          CustomText(
+                            text: "${ddMMM(data[itemIndex].startTime)} - ${ddMMM(data[itemIndex].endTime)}",
+                            size: 12,
+                            color: Colors.white,
+                            fontWeight: FontWeight.w500,
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      Row(
+                        children: [
+                          if (data[itemIndex].offerPrice != data[itemIndex].price)
+                            Text(
+                              data[itemIndex].price,
+                              style: const TextStyle(
+                                decoration: TextDecoration.lineThrough,
+                                decorationThickness: 3,
+                                decorationColor: Colors.red,
+                                color: Colors.red,
+                                fontSize: 8,
+                                decorationStyle: TextDecorationStyle.solid,
+                                fontWeight: FontWeight.w500,
+                              ),
+                            ),
+                          const SizedBox(width: 4),
+                          CustomText(
+                            text: data[itemIndex].offerPrice,
+                            size: 11,
+                            color: Colors.red,
+                            fontWeight: FontWeight.w600,
+                          ),
+                          const Spacer(),
+                          const CustomText(
+                            text: 'View Details',
+                            color: Colors.white,
+                            size: 10,
+                            fontWeight: FontWeight.w500,
+                          ),
+                          Icon(
+                            Icons.arrow_forward,
+                            color: ColorPalette.whiteColor,
+                            size: 11,
+                          )
+                        ],
+                      )
+                    ],
+                  ),
                 ),
               ),
             ),

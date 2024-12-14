@@ -1,4 +1,4 @@
-import 'package:flutter/services.dart' show rootBundle; // For loading from assets
+import 'package:flutter/services.dart' show rootBundle;
 
 class NetworkDataProvider {
   Future<String> getAllTrainingsDataFun() async {

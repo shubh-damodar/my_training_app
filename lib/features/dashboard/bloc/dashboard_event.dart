@@ -5,10 +5,6 @@ sealed class DashboardEvent {}
 
 class DashboardGetDataEvent extends DashboardEvent {}
 
-class LeftArrowEvent extends DashboardEvent {}
-
-class RightArrowEvent extends DashboardEvent {}
-
 class GetAllDataEvent extends DashboardEvent {}
 
 class GetFilterDataEvent extends DashboardEvent {

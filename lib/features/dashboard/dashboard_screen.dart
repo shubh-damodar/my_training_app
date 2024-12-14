@@ -127,9 +127,7 @@ class FilterIconWidget extends StatelessWidget {
             context: context,
             builder: (BuildContext context) => FilterWIdget(),
           );
-          if (globalSaveList.isNotEmpty) {
-            context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
-          }
+          if (context.mounted) context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
         },
         child: Container(
           decoration: BoxDecoration(

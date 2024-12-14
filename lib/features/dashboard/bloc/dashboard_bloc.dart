@@ -18,7 +18,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
         TrainingModel data = await weatherRepository.getTrainingModelFun();
         emit(DashboardSuccessState(trainingModel: data));
       } catch (e) {
-        emit(DashboardErrorState(error: e.toString())); // Handle errors
+        emit(DashboardErrorState(error: e.toString()));
       }
     });
 
@@ -79,6 +79,11 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
     on<FilterWithLocationEvent>((FilterWithLocationEvent event, Emitter<DashboardState> emit) async {
       try {
         TrainingModel data = await weatherRepository.getTrainingModelFun();
+
+        if (event.newList.isEmpty) {
+          emit(FilteredFromSortState(trainingList: data.trainings));
+          return;
+        }
 
         final locationFilters = event.newList.where((item) => item['type'] == 'Location').map((item) => item['name']).toSet();
         final trainerFilters = event.newList.where((item) => item['type'] == 'Trainer').map((item) => item['name']).toSet();
