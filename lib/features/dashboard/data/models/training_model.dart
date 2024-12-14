@@ -5,10 +5,7 @@ class TrainingModel {
   });
 
   final String status;
-  static const String statusKey = "status";
-
   final List<Training> trainings;
-  static const String trainingsKey = "trainings";
 
   factory TrainingModel.fromJson(Map<String, dynamic> json) {
     return TrainingModel(
@@ -17,10 +14,12 @@ class TrainingModel {
     );
   }
 
-  Map<String, dynamic> toJson() => {
-        "status": status,
-        "trainings": trainings.map((x) => x.toJson()).toList(),
-      };
+  Map<String, dynamic> toJson() {
+    return {
+      "status": status,
+      "trainings": trainings.map((x) => x.toJson()).toList(),
+    };
+  }
 }
 
 class Training {

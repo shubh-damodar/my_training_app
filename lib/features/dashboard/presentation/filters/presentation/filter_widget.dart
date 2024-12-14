@@ -55,6 +55,10 @@ class SortWidget extends StatelessWidget {
         if (state is FilteredFromSortState) {
           customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: state.selectedSortList));
         }
+
+        if (state is DashboardErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error ?? '')));
+        }
       },
       builder: (BuildContext context, DashboardState state) {
         var selectedSortString = '';

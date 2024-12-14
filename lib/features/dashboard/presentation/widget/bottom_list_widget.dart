@@ -27,7 +27,11 @@ class _BottomListBuilderWidgetState extends State<BottomListBuilderWidget> {
   @override
   Widget build(BuildContext context) {
     return BlocConsumer<DashboardBloc, DashboardState>(
-      listener: (BuildContext context, DashboardState state) {},
+      listener: (BuildContext context, DashboardState state) {
+        if (state is DashboardErrorState) {
+          ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(state.error ?? '')));
+        }
+      },
       builder: (BuildContext context, DashboardState state) {
         if (state is DashboardFilterListLoadingState) return const LoadingShimmerWidget();
 
@@ -36,78 +40,123 @@ class _BottomListBuilderWidgetState extends State<BottomListBuilderWidget> {
           data.addAll(state.trainingList ?? []);
         }
 
-        if (data.isEmpty) return _noDataFound(context);
-
-        return Expanded(
-          child: ListView.builder(
-            itemCount: data.length,
-            shrinkWrap: true,
-            primary: true,
-            padding: edgeLRTB(t: 8),
-            itemBuilder: (BuildContext context, int index) {
-              return InkWell(
-                onTap: () => context.push('/summeryOfTrainingScreen', extra: data[index]),
-                child: Container(
-                  height: 150,
-                  margin: const EdgeInsets.only(bottom: 8, right: 16, left: 16, top: 8),
-                  padding: edgeAll(16),
-                  width: MediaQuery.of(context).size.width,
-                  color: ColorPalette.whiteColor,
-                  child: Row(
-                    children: [
-                      _leftCardDetails(data[index]),
-                      const SizedBox(width: 10),
-                      SizedBox(
-                        height: 150,
-                        child: Column(
-                          mainAxisSize: MainAxisSize.max,
-                          children: List.generate(35, (int _) {
-                            return Expanded(
-                              child: Container(
-                                width: 1,
-                                height: 2,
-                                color: Colors.grey,
-                                margin: edgeLRTB(b: 2),
-                              ),
-                            );
-                          }),
-                        ),
-                      ),
-                      const SizedBox(width: 10),
-                      _rightCardDetails(data[index]),
-                    ],
-                  ),
-                ),
-              );
-            },
-          ),
-        );
+        return data.isEmpty ? const NoDataFoundWidget() : ListViewBuilderWidget(data: data);
       },
     );
   }
+}
 
-  Padding _noDataFound(BuildContext context) {
-    return Padding(
-      padding: edgeLRTB(t: 20),
-      child: Column(
-        children: [
-          const CustomText(text: "No Data Found!!!"),
-          InkWell(
-            onTap: () {
-              globalSaveList.clear();
-              context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
-            },
-            child: const CustomText(
-              text: "Clear Filters",
-              color: Colors.blueAccent,
+class ListViewBuilderWidget extends StatelessWidget {
+  final List<Training> data;
+
+  const ListViewBuilderWidget({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return Expanded(
+      child: ListView.builder(
+        itemCount: data.length,
+        shrinkWrap: true,
+        primary: true,
+        padding: edgeLRTB(t: 8),
+        itemBuilder: (BuildContext context, int index) {
+          return InkWell(
+            onTap: () => context.push('/summeryOfTrainingScreen', extra: data[index]),
+            child: Container(
+              height: 150,
+              margin: const EdgeInsets.only(bottom: 8, right: 16, left: 16, top: 8),
+              padding: edgeAll(16),
+              width: MediaQuery.of(context).size.width,
+              color: ColorPalette.whiteColor,
+              child: Row(
+                children: [
+                  RightCardDetails(data: data[index]),
+                  const SizedBox(width: 10),
+                  SizedBox(
+                    height: 150,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.max,
+                      children: List.generate(35, (int _) {
+                        return Expanded(
+                          child: Container(
+                            width: 1,
+                            height: 2,
+                            color: Colors.grey,
+                            margin: edgeLRTB(b: 2),
+                          ),
+                        );
+                      }),
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  RightCardDetails(data: data[index]),
+                ],
+              ),
             ),
+          );
+        },
+      ),
+    );
+  }
+}
+
+class LeftCardDetails extends StatelessWidget {
+  final Training data;
+  const LeftCardDetails({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
+    return SizedBox(
+      width: 110,
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.start,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              CustomText(
+                text: mmmDd(data.startTime),
+                fontWeight: FontWeight.w700,
+              ),
+              const CustomText(
+                text: " - ",
+                fontWeight: FontWeight.w700,
+              ),
+              CustomText(
+                text: '${dd(data.endTime)},',
+                fontWeight: FontWeight.w700,
+              ),
+            ],
           ),
+          CustomText(
+            text: yyyy(data.startTime),
+            fontWeight: FontWeight.w700,
+          ),
+          const SizedBox(height: 10),
+          CustomText(
+            text: "${formatTime(data.startTime)} - ${formatTime(data.endTime)}",
+            size: 9,
+            fontWeight: FontWeight.w500,
+          ),
+          const Spacer(),
+          CustomText(
+            text: data.address,
+            size: 11,
+            fontWeight: FontWeight.w500,
+          ),
+          const SizedBox(height: 3),
         ],
       ),
     );
   }
+}
 
-  Expanded _rightCardDetails(Training data) {
+class RightCardDetails extends StatelessWidget {
+  final Training data;
+  const RightCardDetails({super.key, required this.data});
+
+  @override
+  Widget build(BuildContext context) {
     return Expanded(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.start,
@@ -200,47 +249,28 @@ class _BottomListBuilderWidgetState extends State<BottomListBuilderWidget> {
       ),
     );
   }
+}
 
-  SizedBox _leftCardDetails(Training data) {
-    return SizedBox(
-      width: 110,
+class NoDataFoundWidget extends StatelessWidget {
+  const NoDataFoundWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: edgeLRTB(t: 20),
       child: Column(
-        mainAxisAlignment: MainAxisAlignment.start,
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Row(
-            children: [
-              CustomText(
-                text: mmmDd(data.startTime),
-                fontWeight: FontWeight.w700,
-              ),
-              const CustomText(
-                text: " - ",
-                fontWeight: FontWeight.w700,
-              ),
-              CustomText(
-                text: '${dd(data.endTime)},',
-                fontWeight: FontWeight.w700,
-              ),
-            ],
+          const CustomText(text: "No Data Found!!!"),
+          InkWell(
+            onTap: () {
+              globalSaveList.clear();
+              context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
+            },
+            child: const CustomText(
+              text: "Clear Filters",
+              color: Colors.blueAccent,
+            ),
           ),
-          CustomText(
-            text: yyyy(data.startTime),
-            fontWeight: FontWeight.w700,
-          ),
-          const SizedBox(height: 10),
-          CustomText(
-            text: "${formatTime(data.startTime)} - ${formatTime(data.endTime)}",
-            size: 9,
-            fontWeight: FontWeight.w500,
-          ),
-          const Spacer(),
-          CustomText(
-            text: data.address,
-            size: 11,
-            fontWeight: FontWeight.w500,
-          ),
-          const SizedBox(height: 3),
         ],
       ),
     );
