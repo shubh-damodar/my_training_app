@@ -1,5 +1,8 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:my_training_app/collections/global_data.dart';
 import 'package:my_training_app/core/theme/app_theme.dart';
+import 'package:my_training_app/features/dashboard/bloc/dashboard_bloc.dart';
 import 'package:my_training_app/features/dashboard/presentation/widget/bottom_list_widget.dart';
 import 'package:my_training_app/features/dashboard/presentation/widget/carousel_container_widget.dart';
 import 'package:my_training_app/features/dashboard/presentation/filters/presentation/filter_widget.dart';
@@ -119,11 +122,14 @@ class FilterIconWidget extends StatelessWidget {
       top: 360,
       left: 16,
       child: InkWell(
-        onTap: () {
-          showModalBottomSheet(
+        onTap: () async {
+          await showModalBottomSheet(
             context: context,
-            builder: (BuildContext context) => const FilterWIdget(),
+            builder: (BuildContext context) => FilterWIdget(),
           );
+          if (globalSaveList.isNotEmpty) {
+            context.read<DashboardBloc>().add(FilterWithLocationEvent(newList: globalSaveList));
+          }
         },
         child: Container(
           decoration: BoxDecoration(

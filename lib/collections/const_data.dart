@@ -1,1 +1,1 @@
-const List sortingLists = ['Sort by', 'Location', 'Training name', 'Trainer'];
+const List sortingLists = ['Sort by', 'Location', 'Training Name', 'Trainer'];

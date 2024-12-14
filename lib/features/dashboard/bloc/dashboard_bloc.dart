@@ -48,7 +48,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
             sortedStrings = trainings.map((training) => training.location).toList();
             sortedStrings.sort();
             break;
-          case 'Training name':
+          case 'Training Name':
             sortedStrings = trainings.map((training) => training.trainingName).toList();
             sortedStrings.sort();
             break;
@@ -66,10 +66,49 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
           return {
             'name': str,
             'isSelected': globalSaveList.any((element) => element['name'] == str && element['isSelected'] as bool),
+            'type': event.query,
           };
         }).toList();
 
         emit(FilteredFromSortState(selectedSortList: updatedList, selectedSortString: event.query, trainingList: data.trainings));
+      } catch (e) {
+        emit(DashboardErrorState(error: e.toString()));
+      }
+    });
+
+    on<FilterWithLocationEvent>((FilterWithLocationEvent event, Emitter<DashboardState> emit) async {
+      try {
+        TrainingModel data = await weatherRepository.getTrainingModelFun();
+
+        final locationFilters = event.newList.where((item) => item['type'] == 'Location').map((item) => item['name']).toSet();
+        final trainerFilters = event.newList.where((item) => item['type'] == 'Trainer').map((item) => item['name']).toSet();
+        final trainingNameFilters = event.newList.where((item) => item['type'] == 'Training Name').map((item) => item['name']).toSet();
+
+        List<Training> tempData = data.trainings.where((training) {
+          final locationMatch = locationFilters.contains(training.location);
+          final trainerMatch = trainerFilters.contains(training.trainer);
+          final trainingNameMatch = trainingNameFilters.contains(training.trainingName);
+
+          if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+            return locationMatch && trainerMatch && trainingNameMatch;
+          } else if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty) {
+            return locationMatch && trainerMatch;
+          } else if (locationFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+            return locationMatch && trainingNameMatch;
+          } else if (trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+            return trainerMatch && trainingNameMatch;
+          } else if (locationFilters.isNotEmpty) {
+            return locationMatch;
+          } else if (trainerFilters.isNotEmpty) {
+            return trainerMatch;
+          } else if (trainingNameFilters.isNotEmpty) {
+            return trainingNameMatch;
+          } else {
+            return false; // No filters active
+          }
+        }).toList();
+
+        emit(FilteredFromSortState(trainingList: tempData));
       } catch (e) {
         emit(DashboardErrorState(error: e.toString()));
       }

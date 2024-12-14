@@ -1,27 +1,19 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:my_training_app/collections/const_data.dart';
+import 'package:my_training_app/collections/global_data.dart';
 import 'package:my_training_app/core/theme/app_theme.dart';
 import 'package:my_training_app/features/dashboard/bloc/dashboard_bloc.dart';
 import 'package:my_training_app/features/dashboard/presentation/filters/bloc/custom_filters_bloc.dart';
 import 'package:my_training_app/utils/custom_padding.dart';
 import 'package:my_training_app/utils/custom_text.dart';
 
-class FilterWIdget extends StatefulWidget {
-  const FilterWIdget({super.key});
+class FilterWIdget extends StatelessWidget {
+  FilterWIdget({super.key});
 
-  @override
-  State<FilterWIdget> createState() => _FilterWIdgetState();
-}
+  final DashboardBloc dashboardBloc = DashboardBloc();
 
-class _FilterWIdgetState extends State<FilterWIdget> {
-  DashboardBloc dashboardBloc = DashboardBloc();
-  CustomFiltersBloc customFiltersBloc = CustomFiltersBloc();
-
-  @override
-  void initState() {
-    super.initState();
-  }
+  final CustomFiltersBloc customFiltersBloc = CustomFiltersBloc();
 
   @override
   Widget build(BuildContext context) {
@@ -32,113 +24,147 @@ class _FilterWIdgetState extends State<FilterWIdget> {
       child: Column(
         mainAxisSize: MainAxisSize.min,
         children: <Widget>[
-          Padding(
-            padding: edgeAll(16),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                const CustomText(
-                  text: "Sort and Filters",
-                  size: 19,
-                  fontWeight: FontWeight.w600,
-                ),
-                InkWell(
-                  child: const Icon(Icons.close),
-                  onTap: () {
-                    Navigator.pop(context);
-                  },
-                ),
-              ],
-            ),
-          ),
-          Container(
-            height: 0.2,
-            width: MediaQuery.of(context).size.width,
-            color: Colors.grey,
-          ),
+          const SortAndFiltersHeadingWidget(),
+          const DividerFilters(),
           Expanded(
             child: Row(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                BlocConsumer<DashboardBloc, DashboardState>(
-                  bloc: dashboardBloc,
-                  listener: (BuildContext context, DashboardState state) {
-                    if (state is FilteredFromSortState) {
-                      customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: state.selectedSortList));
-                    }
-                  },
-                  builder: (BuildContext context, DashboardState state) {
-                    var selectedSortString = '';
-
-                    if (state is FilteredFromSortState) {
-                      selectedSortString = state.selectedSortString ?? '';
-                    }
-
-                    return SizedBox(
-                      width: MediaQuery.of(context).size.width / 2.4,
-                      child: ListView.builder(
-                        itemCount: sortingLists.length,
-                        shrinkWrap: true,
-                        padding: edgeAll(0),
-                        itemBuilder: (BuildContext context, int index) {
-                          return InkWell(
-                            onTap: () {
-                              dashboardBloc.add(FilterWithQueryEvent(query: sortingLists[index]));
-                            },
-                            child: SortBuilderWidget(
-                              selectedText: selectedSortString,
-                              text: sortingLists[index],
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
-                BlocConsumer<CustomFiltersBloc, CustomFiltersState>(
-                  bloc: customFiltersBloc,
-                  listener: (BuildContext context, CustomFiltersState state) {},
-                  builder: (BuildContext context, CustomFiltersState state) {
-                    if (state is CustomFiltersLoading) {
-                      return const Expanded(child: Center(child: CircularProgressIndicator()));
-                    }
-                    List<Map<String, dynamic>> selectedSort = [];
-
-                    if (state is SelectedFiltersState) {
-                      selectedSort = state.selectedSortValue ?? selectedSort;
-                    }
-
-                    return Expanded(
-                      child: ListView.builder(
-                        itemCount: selectedSort.length,
-                        shrinkWrap: true,
-                        padding: edgeLRTB(l: 16, r: 16),
-                        itemBuilder: (BuildContext context, int index) {
-                          return CheckboxListTile(
-                            value: selectedSort[index]['isSelected'] as bool,
-                            contentPadding: edgeAll(0),
-                            checkColor: Colors.red,
-                            hoverColor: Colors.white,
-                            activeColor: ColorPalette.backgroundColor,
-                            overlayColor: WidgetStatePropertyAll(ColorPalette.backgroundColor),
-                            onChanged: (bool? value) {
-                              selectedSort[index]['isSelected'] = value!;
-                              customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: selectedSort));
-                            },
-                            title: CustomText(
-                              text: selectedSort[index]['name'].toString(),
-                              size: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                          );
-                        },
-                      ),
-                    );
-                  },
-                ),
+                SortWidget(dashboardBloc: dashboardBloc, customFiltersBloc: customFiltersBloc),
+                FilterWidget(dashboardBloc: dashboardBloc, customFiltersBloc: customFiltersBloc),
               ],
             ),
           )
+        ],
+      ),
+    );
+  }
+}
+
+class SortWidget extends StatelessWidget {
+  const SortWidget({super.key, required this.dashboardBloc, required this.customFiltersBloc});
+
+  final DashboardBloc dashboardBloc;
+  final CustomFiltersBloc customFiltersBloc;
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<DashboardBloc, DashboardState>(
+      bloc: dashboardBloc,
+      listener: (BuildContext context, DashboardState state) {
+        if (state is FilteredFromSortState) {
+          customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: state.selectedSortList));
+        }
+      },
+      builder: (BuildContext context, DashboardState state) {
+        var selectedSortString = '';
+
+        if (state is FilteredFromSortState) {
+          selectedSortString = state.selectedSortString ?? '';
+        }
+
+        return SizedBox(
+          width: MediaQuery.of(context).size.width / 2.4,
+          child: ListView.builder(
+            itemCount: sortingLists.length,
+            shrinkWrap: true,
+            padding: edgeAll(0),
+            itemBuilder: (BuildContext context, int index) {
+              return InkWell(
+                onTap: () => dashboardBloc.add(FilterWithQueryEvent(query: sortingLists[index])),
+                child: SortBuilderWidget(
+                  selectedText: selectedSortString,
+                  text: sortingLists[index],
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class FilterWidget extends StatelessWidget {
+  final DashboardBloc dashboardBloc;
+  final CustomFiltersBloc customFiltersBloc;
+  const FilterWidget({super.key, required this.dashboardBloc, required this.customFiltersBloc});
+
+  @override
+  Widget build(BuildContext context) {
+    return BlocConsumer<CustomFiltersBloc, CustomFiltersState>(
+      bloc: customFiltersBloc,
+      listener: (BuildContext context, CustomFiltersState state) {},
+      builder: (BuildContext context, CustomFiltersState state) {
+        if (state is CustomFiltersLoading) {
+          return const Expanded(child: Center(child: CircularProgressIndicator()));
+        }
+        List<Map<String, dynamic>> selectedSort = [];
+
+        if (state is SelectedFiltersState) {
+          selectedSort = state.selectedSortValue ?? selectedSort;
+        }
+
+        return Expanded(
+          child: ListView.builder(
+            itemCount: selectedSort.length,
+            shrinkWrap: true,
+            padding: edgeLRTB(l: 16, r: 16),
+            itemBuilder: (BuildContext context, int index) {
+              return CheckboxListTile(
+                value: selectedSort[index]['isSelected'] as bool,
+                contentPadding: edgeAll(0),
+                checkColor: Colors.red,
+                hoverColor: Colors.white,
+                activeColor: ColorPalette.backgroundColor,
+                overlayColor: WidgetStatePropertyAll(ColorPalette.backgroundColor),
+                onChanged: (bool? value) {
+                  selectedSort[index]['isSelected'] = value!;
+                  customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: selectedSort));
+                },
+                title: CustomText(
+                  text: selectedSort[index]['name'].toString(),
+                  size: 13,
+                  fontWeight: FontWeight.w600,
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+}
+
+class DividerFilters extends StatelessWidget {
+  const DividerFilters({super.key});
+
+  @override
+  Widget build(BuildContext context) => Container(height: 0.2, width: MediaQuery.of(context).size.width, color: Colors.grey);
+}
+
+class SortAndFiltersHeadingWidget extends StatelessWidget {
+  const SortAndFiltersHeadingWidget({super.key});
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: edgeAll(16),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          const CustomText(
+            text: "Sort and Filters",
+            size: 19,
+            fontWeight: FontWeight.w600,
+          ),
+          InkWell(
+            child: Icon(Icons.close, color: ColorPalette.blackColor),
+            onTap: () {
+              globalSaveList.clear();
+              Navigator.pop(context);
+            },
+          ),
         ],
       ),
     );

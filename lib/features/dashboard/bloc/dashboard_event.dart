@@ -22,3 +22,8 @@ class FilterWithQueryEvent extends DashboardEvent {
   final String? query;
   FilterWithQueryEvent({this.query});
 }
+
+class FilterWithLocationEvent extends DashboardEvent {
+  final List<Map<String, dynamic>> newList;
+  FilterWithLocationEvent({required this.newList});
+}
