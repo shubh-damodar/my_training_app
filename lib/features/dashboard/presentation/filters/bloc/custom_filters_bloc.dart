@@ -9,7 +9,7 @@ part 'custom_filters_state.dart';
 class CustomFiltersBloc extends Bloc<CustomFiltersEvent, CustomFiltersState> {
   CustomFiltersBloc() : super(CustomFiltersInitial()) {
     on<SelectedFiltersEvent>((event, emit) {
-      List<Map<String, Object>> updatedFilters = List.from(globalSaveList);
+      List<Map<String, dynamic>> updatedFilters = List.from(globalSaveList);
 
       for (var element in event.selectedSortValue ?? []) {
         if (element["isSelected"] as bool) {
@@ -22,7 +22,6 @@ class CustomFiltersBloc extends Bloc<CustomFiltersEvent, CustomFiltersState> {
       }
 
       globalSaveList = updatedFilters;
-
       emit(SelectedFiltersState(selectedSortValue: event.selectedSortValue));
     });
   }

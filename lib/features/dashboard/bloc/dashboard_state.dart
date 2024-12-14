@@ -15,7 +15,7 @@ final class DashboardSuccessState extends DashboardState {
 final class DashboardFilterListLoadingState extends DashboardState {}
 
 final class FilteredFromSortState extends DashboardState {
-  final List<Map<String, Object>>? selectedSortList;
+  final List<Map<String, dynamic>>? selectedSortList;
   final String? selectedSortString;
   final List<Training>? trainingList;
 

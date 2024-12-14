@@ -62,7 +62,7 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
 
         Set<String> uniqueStrings = Set.from(sortedStrings);
 
-        List<Map<String, Object>> updatedList = uniqueStrings.map((str) {
+        List<Map<String, dynamic>> updatedList = uniqueStrings.map((str) {
           return {
             'name': str,
             'isSelected': globalSaveList.any((element) => element['name'] == str && element['isSelected'] as bool),

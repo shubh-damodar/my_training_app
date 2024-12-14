@@ -4,6 +4,6 @@ part of 'custom_filters_bloc.dart';
 sealed class CustomFiltersEvent {}
 
 class SelectedFiltersEvent extends CustomFiltersEvent {
-  final List<Map<String, Object>>? selectedSortValue;
+  final List<Map<String, dynamic>>? selectedSortValue;
   SelectedFiltersEvent({this.selectedSortValue});
 }

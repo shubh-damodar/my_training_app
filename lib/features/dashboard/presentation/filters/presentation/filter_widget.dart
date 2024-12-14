@@ -102,7 +102,7 @@ class _FilterWIdgetState extends State<FilterWIdget> {
                     if (state is CustomFiltersLoading) {
                       return const Expanded(child: Center(child: CircularProgressIndicator()));
                     }
-                    List<Map<String, Object>> selectedSort = [];
+                    List<Map<String, dynamic>> selectedSort = [];
 
                     if (state is SelectedFiltersState) {
                       selectedSort = state.selectedSortValue ?? selectedSort;

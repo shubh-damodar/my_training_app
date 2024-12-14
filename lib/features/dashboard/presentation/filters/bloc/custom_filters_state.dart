@@ -8,6 +8,6 @@ final class CustomFiltersInitial extends CustomFiltersState {}
 final class CustomFiltersLoading extends CustomFiltersState {}
 
 final class SelectedFiltersState extends CustomFiltersState {
-  final List<Map<String, Object>>? selectedSortValue;
+  final List<Map<String, dynamic>>? selectedSortValue;
   SelectedFiltersState({this.selectedSortValue});
 }
