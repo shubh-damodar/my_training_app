@@ -70,7 +70,7 @@ class ListViewBuilderWidget extends StatelessWidget {
               color: ColorPalette.whiteColor,
               child: Row(
                 children: [
-                  RightCardDetails(data: data[index]),
+                  LeftCardDetails(data: data[index]),
                   const SizedBox(width: 10),
                   SizedBox(
                     height: 150,

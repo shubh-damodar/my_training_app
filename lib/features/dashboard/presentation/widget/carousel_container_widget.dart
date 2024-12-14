@@ -136,11 +136,14 @@ class CustomCursorWidget extends StatelessWidget {
       child: CarouselSlider.builder(
         itemCount: data.length,
         carouselController: buttonCarouselController,
+        options: CarouselOptions(
+          enlargeCenterPage: true,
+          viewportFraction: 0.9,
+          aspectRatio: 2.0,
+        ),
         itemBuilder: (BuildContext context, int itemIndex, int pageViewIndex) {
           return InkWell(
-            onTap: () {
-              context.push('/summeryOfTrainingScreen', extra: data[itemIndex]);
-            },
+            onTap: () => context.push('/summeryOfTrainingScreen', extra: data[itemIndex]),
             child: ClipRRect(
               borderRadius: const BorderRadius.all(Radius.circular(9)),
               child: SizedBox(
@@ -232,11 +235,6 @@ class CustomCursorWidget extends StatelessWidget {
             ),
           );
         },
-        options: CarouselOptions(
-          enlargeCenterPage: true,
-          viewportFraction: 0.9,
-          aspectRatio: 2.0,
-        ),
       ),
     );
   }
