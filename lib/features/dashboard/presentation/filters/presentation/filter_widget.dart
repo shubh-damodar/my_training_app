@@ -115,22 +115,32 @@ class FilterWidget extends StatelessWidget {
             shrinkWrap: true,
             padding: edgeLRTB(l: 16, r: 16),
             itemBuilder: (BuildContext context, int index) {
-              return CheckboxListTile(
-                value: selectedSort[index]['isSelected'] as bool,
-                contentPadding: edgeAll(0),
-                checkColor: Colors.red,
-                hoverColor: Colors.white,
-                activeColor: ColorPalette.backgroundColor,
-                overlayColor: WidgetStatePropertyAll(ColorPalette.backgroundColor),
-                onChanged: (bool? value) {
-                  selectedSort[index]['isSelected'] = value!;
-                  customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: selectedSort));
-                },
-                title: CustomText(
-                  text: selectedSort[index]['name'].toString(),
-                  size: 13,
-                  fontWeight: FontWeight.w600,
-                ),
+              return Row(
+                children: [
+                  Checkbox(
+                    value: selectedSort[index]['isSelected'] as bool,
+                    checkColor: Colors.white,
+                    focusColor: ColorPalette.redColor,
+                    hoverColor: ColorPalette.redColor,
+                    activeColor: ColorPalette.redColor,
+                    overlayColor: WidgetStatePropertyAll(ColorPalette.redColor),
+                    onChanged: (bool? value) {
+                      selectedSort[index]['isSelected'] = value!;
+                      customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: selectedSort));
+                    },
+                  ),
+                  InkWell(
+                    onTap: () {
+                      selectedSort[index]['isSelected'] = !selectedSort[index]['isSelected']!;
+                      customFiltersBloc.add(SelectedFiltersEvent(selectedSortValue: selectedSort));
+                    },
+                    child: CustomText(
+                      text: selectedSort[index]['name'].toString(),
+                      size: 13,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               );
             },
           ),
