@@ -50,19 +50,18 @@ class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
       switch (event.query) {
         case 'Location':
           sortedStrings = trainings.map((training) => training.location).toList();
-          sortedStrings.sort();
           break;
         case 'Training Name':
           sortedStrings = trainings.map((training) => training.trainingName).toList();
-          sortedStrings.sort();
           break;
         case 'Trainer':
           sortedStrings = trainings.map((training) => training.trainer).toList();
-          sortedStrings.sort();
           break;
         default:
           break;
       }
+
+      sortedStrings.sort();
 
       Set<String> uniqueStrings = Set.from(sortedStrings);
 
