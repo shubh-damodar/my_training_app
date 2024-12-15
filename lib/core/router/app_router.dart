@@ -19,9 +19,8 @@ class AppRouter {
           return SummeryOfTrainingScreen(
             key: state.pageKey,
             training: training,
-          );  
+          );
         },
-        // pageBuilder: (context, state) => const SummeryOfTrainingScreen(),
       ),
     ],
   );

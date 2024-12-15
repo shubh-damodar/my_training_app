@@ -35,17 +35,18 @@ class _CarouselWidgetState extends State<CarouselWidget> {
         bloc: dashboardBloc,
         listener: (BuildContext context, DashboardState state) {},
         builder: (BuildContext context, DashboardState state) {
-          if (state is DashboardLoadingState) return const LoadingShimmerWidget();
-
-          if (state is DashboardSuccessState && state.trainingModel.trainings.isNotEmpty) {
+          if (state is DashboardLoadingState) {
+            return const LoadingShimmerWidget();
+          } else if (state is DashboardSuccessState && state.trainingModel.trainings.isNotEmpty) {
             return Stack(
               children: [
                 CustomCursorWidget(data: state.trainingModel.trainings, buttonCarouselController: buttonCarouselController),
                 CustomCursorNavigatorsWidget(buttonCarouselController: buttonCarouselController),
               ],
             );
+          } else {
+            return const SizedBox.shrink();
           }
-          return const SizedBox.shrink();
         },
       ),
     );
