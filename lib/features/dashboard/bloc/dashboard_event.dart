@@ -3,8 +3,6 @@ part of 'dashboard_bloc.dart';
 @immutable
 sealed class DashboardEvent {}
 
-class DashboardGetDataEvent extends DashboardEvent {}
-
 class GetAllDataEvent extends DashboardEvent {}
 
 class GetFilterDataEvent extends DashboardEvent {

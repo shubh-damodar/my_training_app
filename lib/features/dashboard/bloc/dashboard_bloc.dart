@@ -8,120 +8,123 @@ part 'dashboard_event.dart';
 part 'dashboard_state.dart';
 
 class DashboardBloc extends Bloc<DashboardEvent, DashboardState> {
+  final DataRepository weatherRepository = DataRepository();
+
   DashboardBloc() : super(DashboardInitialState()) {
-    final DataRepository weatherRepository = DataRepository();
+    on<GetAllDataEvent>(getAllDataEvent);
+    on<GetFilterDataEvent>(getFilteredDataEvent);
+    on<FilterWithQueryEvent>(filterWithQueryEvent);
+    on<FilterWithLocationEvent>(filterWithLocationEvent);
+  }
 
-    on<GetAllDataEvent>((GetAllDataEvent event, Emitter<DashboardState> emit) async {
-      emit(DashboardLoadingState());
-      await Future.delayed(const Duration(seconds: 1));
-      try {
-        TrainingModel data = await weatherRepository.getTrainingModelFun();
-        emit(DashboardSuccessState(trainingModel: data));
-      } catch (e) {
-        emit(DashboardErrorState(error: e.toString()));
+  Future<void> getAllDataEvent(GetAllDataEvent event, Emitter<DashboardState> emit) async {
+    emit(DashboardLoadingState());
+    await Future.delayed(const Duration(seconds: 1));
+    try {
+      TrainingModel data = await weatherRepository.getTrainingModelFun();
+      emit(DashboardSuccessState(trainingModel: data));
+    } catch (e) {
+      emit(DashboardErrorState(error: e.toString()));
+    }
+  }
+
+  Future<void> getFilteredDataEvent(GetFilterDataEvent event, Emitter<DashboardState> emit) async {
+    emit(DashboardLoadingState());
+    await Future.delayed(const Duration(seconds: 1));
+    try {
+      TrainingModel data = await weatherRepository.getTrainingModelFun();
+      emit(FilteredFromSortState(trainingList: data.trainings));
+    } catch (e) {
+      emit(DashboardErrorState(error: e.toString()));
+    }
+  }
+
+  Future<void> filterWithQueryEvent(FilterWithQueryEvent event, Emitter<DashboardState> emit) async {
+    try {
+      TrainingModel data = await weatherRepository.getTrainingModelFun();
+
+      List<Training> trainings = data.trainings;
+
+      List<String> sortedStrings = [];
+
+      switch (event.query) {
+        case 'Location':
+          sortedStrings = trainings.map((training) => training.location).toList();
+          sortedStrings.sort();
+          break;
+        case 'Training Name':
+          sortedStrings = trainings.map((training) => training.trainingName).toList();
+          sortedStrings.sort();
+          break;
+        case 'Trainer':
+          sortedStrings = trainings.map((training) => training.trainer).toList();
+          sortedStrings.sort();
+          break;
+        default:
+          break;
       }
-    });
 
-    on<GetFilterDataEvent>((GetFilterDataEvent event, Emitter<DashboardState> emit) async {
-      emit(DashboardFilterListLoadingState());
-      await Future.delayed(const Duration(seconds: 1));
+      Set<String> uniqueStrings = Set.from(sortedStrings);
 
-      try {
-        TrainingModel data = await weatherRepository.getTrainingModelFun();
+      List<Map<String, dynamic>> updatedList = uniqueStrings.map((str) {
+        return {
+          'name': str,
+          'isSelected': globalSaveList.any((element) => element['name'] == str && element['isSelected'] as bool),
+          'type': event.query,
+        };
+      }).toList();
 
+      emit(FilteredFromSortState(selectedSortList: updatedList, selectedSortString: event.query, trainingList: data.trainings));
+    } catch (e) {
+      emit(DashboardErrorState(error: e.toString()));
+    }
+  }
+
+  Future<void> filterWithLocationEvent(FilterWithLocationEvent event, Emitter<DashboardState> emit) async {
+    try {
+      TrainingModel data = await weatherRepository.getTrainingModelFun();
+
+      if (event.newList.isEmpty) {
         emit(FilteredFromSortState(trainingList: data.trainings));
-      } catch (e) {
-        emit(DashboardErrorState(error: e.toString()));
+        return;
       }
-    });
 
-    on<FilterWithQueryEvent>((FilterWithQueryEvent event, Emitter<DashboardState> emit) async {
-      try {
-        TrainingModel data = await weatherRepository.getTrainingModelFun();
+      final locationFilters = event.newList.where((item) => item['type'] == 'Location').map((item) => item['name']).toSet();
+      final trainerFilters = event.newList.where((item) => item['type'] == 'Trainer').map((item) => item['name']).toSet();
+      final trainingNameFilters = event.newList.where((item) => item['type'] == 'Training Name').map((item) => item['name']).toSet();
 
-        List<Training> trainings = data.trainings;
+      List<Training> tempData = data.trainings.where((training) {
+        final locationMatch = locationFilters.contains(training.location);
+        final trainerMatch = trainerFilters.contains(training.trainer);
+        final trainingNameMatch = trainingNameFilters.contains(training.trainingName);
 
-        List<String> sortedStrings = [];
+        if (locationFilters.isNotEmpty && !locationMatch) return false;
+        if (trainerFilters.isNotEmpty && !trainerMatch) return false;
+        if (trainingNameFilters.isNotEmpty && !trainingNameMatch) return false;
+        //Early return for optimization ----->
 
-        switch (event.query) {
-          case 'Location':
-            sortedStrings = trainings.map((training) => training.location).toList();
-            sortedStrings.sort();
-            break;
-          case 'Training Name':
-            sortedStrings = trainings.map((training) => training.trainingName).toList();
-            sortedStrings.sort();
-            break;
-          case 'Trainer':
-            sortedStrings = trainings.map((training) => training.trainer).toList();
-            sortedStrings.sort();
-            break;
-          default:
-            break;
+        if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+          return locationMatch && trainerMatch && trainingNameMatch;
+        } else if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty) {
+          return locationMatch && trainerMatch;
+        } else if (locationFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+          return locationMatch && trainingNameMatch;
+        } else if (trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
+          return trainerMatch && trainingNameMatch;
+        } else if (locationFilters.isNotEmpty) {
+          return locationMatch;
+        } else if (trainerFilters.isNotEmpty) {
+          return trainerMatch;
+        } else if (trainingNameFilters.isNotEmpty) {
+          return trainingNameMatch;
+        } else {
+          return false;
         }
+      }).toList();
 
-        Set<String> uniqueStrings = Set.from(sortedStrings);
-
-        List<Map<String, dynamic>> updatedList = uniqueStrings.map((str) {
-          return {
-            'name': str,
-            'isSelected': globalSaveList.any((element) => element['name'] == str && element['isSelected'] as bool),
-            'type': event.query,
-          };
-        }).toList();
-
-        emit(FilteredFromSortState(selectedSortList: updatedList, selectedSortString: event.query, trainingList: data.trainings));
-      } catch (e) {
-        emit(DashboardErrorState(error: e.toString()));
-      }
-    });
-
-    on<FilterWithLocationEvent>((FilterWithLocationEvent event, Emitter<DashboardState> emit) async {
-      try {
-        TrainingModel data = await weatherRepository.getTrainingModelFun();
-
-        if (event.newList.isEmpty) {
-          emit(FilteredFromSortState(trainingList: data.trainings));
-          return;
-        }
-
-        final locationFilters = event.newList.where((item) => item['type'] == 'Location').map((item) => item['name']).toSet();
-        final trainerFilters = event.newList.where((item) => item['type'] == 'Trainer').map((item) => item['name']).toSet();
-        final trainingNameFilters = event.newList.where((item) => item['type'] == 'Training Name').map((item) => item['name']).toSet();
-
-        List<Training> tempData = data.trainings.where((training) {
-          final locationMatch = locationFilters.contains(training.location);
-          final trainerMatch = trainerFilters.contains(training.trainer);
-          final trainingNameMatch = trainingNameFilters.contains(training.trainingName);
-
-          if (locationFilters.isNotEmpty && !locationMatch) return false;
-          if (trainerFilters.isNotEmpty && !trainerMatch) return false;
-          if (trainingNameFilters.isNotEmpty && !trainingNameMatch) return false;
-          //Early return for optimization ----->
-
-          if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
-            return locationMatch && trainerMatch && trainingNameMatch;
-          } else if (locationFilters.isNotEmpty && trainerFilters.isNotEmpty) {
-            return locationMatch && trainerMatch;
-          } else if (locationFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
-            return locationMatch && trainingNameMatch;
-          } else if (trainerFilters.isNotEmpty && trainingNameFilters.isNotEmpty) {
-            return trainerMatch && trainingNameMatch;
-          } else if (locationFilters.isNotEmpty) {
-            return locationMatch;
-          } else if (trainerFilters.isNotEmpty) {
-            return trainerMatch;
-          } else if (trainingNameFilters.isNotEmpty) {
-            return trainingNameMatch;
-          } else {
-            return false;
-          }
-        }).toList();
-
-        emit(FilteredFromSortState(trainingList: tempData));
-      } catch (e) {
-        emit(DashboardErrorState(error: e.toString()));
-      }
-    });
+      emit(FilteredFromSortState(trainingList: tempData));
+    } catch (e) {
+      emit(DashboardErrorState(error: e.toString()));
+    }
   }
 }
